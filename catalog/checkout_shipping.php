@@ -95,12 +95,9 @@
   }
 
 // process the selected shipping method
-  if ( isset($HTTP_POST_VARS['action']) && ($HTTP_POST_VARS['action'] == 'process') && isset($HTTP_POST_VARS['formid']) && ($HTTP_POST_VARS['formid'] == $sessiontoken) ) {
+  if (false !== tep_validate_form(array('action' => 'process', 'comments' => 'tep_db_prepare_input'))) {
+    extract($validated,EXTR_OVERWRITE);
     if (!tep_session_is_registered('comments')) tep_session_register('comments');
-    if (tep_not_null($HTTP_POST_VARS['comments'])) {
-      $comments = tep_db_prepare_input($HTTP_POST_VARS['comments']);
-    }
-
     if (!tep_session_is_registered('shipping')) tep_session_register('shipping');
 
     if ( (tep_count_shipping_modules() > 0) || ($free_shipping == true) ) {

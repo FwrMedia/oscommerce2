@@ -28,20 +28,15 @@
 
   $error = false;
   $process = false;
-  if (isset($HTTP_POST_VARS['action']) && ($HTTP_POST_VARS['action'] == 'submit') && isset($HTTP_POST_VARS['formid']) && ($HTTP_POST_VARS['formid'] == $sessiontoken)) {
-// process a new billing address
-    if (tep_not_null($HTTP_POST_VARS['firstname']) && tep_not_null($HTTP_POST_VARS['lastname']) && tep_not_null($HTTP_POST_VARS['street_address'])) {
+  if (false !== $validated = tep_validate_form(array('action' => 'submit','firstname' => 'strip_tags','lastname' => 'strip_tags','street_address' => 'strip_tags','postcode' => 'strip_tags','city' => 'strip_tags','country' => 'strip_tags'))) {
+    extract($validated,EXTR_OVERWRITE);
+    // process a new billing address
+    if (tep_not_null($firstname) && tep_not_null($lastname) && tep_not_null($street_address)) {
       $process = true;
 
       if (ACCOUNT_GENDER == 'true') $gender = tep_db_prepare_input($HTTP_POST_VARS['gender']);
       if (ACCOUNT_COMPANY == 'true') $company = tep_db_prepare_input($HTTP_POST_VARS['company']);
-      $firstname = tep_db_prepare_input($HTTP_POST_VARS['firstname']);
-      $lastname = tep_db_prepare_input($HTTP_POST_VARS['lastname']);
-      $street_address = tep_db_prepare_input($HTTP_POST_VARS['street_address']);
       if (ACCOUNT_SUBURB == 'true') $suburb = tep_db_prepare_input($HTTP_POST_VARS['suburb']);
-      $postcode = tep_db_prepare_input($HTTP_POST_VARS['postcode']);
-      $city = tep_db_prepare_input($HTTP_POST_VARS['city']);
-      $country = tep_db_prepare_input($HTTP_POST_VARS['country']);
       if (ACCOUNT_STATE == 'true') {
         if (isset($HTTP_POST_VARS['zone_id'])) {
           $zone_id = tep_db_prepare_input($HTTP_POST_VARS['zone_id']);

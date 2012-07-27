@@ -14,14 +14,11 @@
 
   require(DIR_WS_LANGUAGES . $language . '/' . FILENAME_CONTACT_US);
 
-  if (isset($HTTP_GET_VARS['action']) && ($HTTP_GET_VARS['action'] == 'send') && isset($HTTP_POST_VARS['formid']) && ($HTTP_POST_VARS['formid'] == $sessiontoken)) {
+  if (isset($HTTP_GET_VARS['action']) && ($HTTP_GET_VARS['action'] == 'send') && (false !== $validated = tep_validate_form(array('name' => 'strip_tags','email' => 'strip_tags','enquiry' => 'strip_tags')))) {
+    extract($validated,EXTR_OVERWRITE);
     $error = false;
 
-    $name = tep_db_prepare_input($HTTP_POST_VARS['name']);
-    $email_address = tep_db_prepare_input($HTTP_POST_VARS['email']);
-    $enquiry = tep_db_prepare_input($HTTP_POST_VARS['enquiry']);
-
-    if (!tep_validate_email($email_address)) {
+    if (!tep_validate_email($email)) {
       $error = true;
 
       $messageStack->add('contact', ENTRY_EMAIL_ADDRESS_CHECK_ERROR);
@@ -37,7 +34,7 @@
     }
 
     if ($error == false) {
-      tep_mail(STORE_OWNER, STORE_OWNER_EMAIL_ADDRESS, EMAIL_SUBJECT, $enquiry, $name, $email_address);
+      tep_mail(STORE_OWNER, STORE_OWNER_EMAIL_ADDRESS, EMAIL_SUBJECT, $enquiry, $name, $email);
 
       $actionRecorder->record();
 

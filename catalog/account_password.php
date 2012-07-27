@@ -20,10 +20,8 @@
 // needs to be included earlier to set the success message in the messageStack
   require(DIR_WS_LANGUAGES . $language . '/' . FILENAME_ACCOUNT_PASSWORD);
 
-  if (isset($HTTP_POST_VARS['action']) && ($HTTP_POST_VARS['action'] == 'process') && isset($HTTP_POST_VARS['formid']) && ($HTTP_POST_VARS['formid'] == $sessiontoken)) {
-    $password_current = tep_db_prepare_input($HTTP_POST_VARS['password_current']);
-    $password_new = tep_db_prepare_input($HTTP_POST_VARS['password_new']);
-    $password_confirmation = tep_db_prepare_input($HTTP_POST_VARS['password_confirmation']);
+  if (false !== $validated = tep_validate_form(array('action' => 'process','password_current' => 'string','password_new' => 'string','password_confirmation' => 'string'))) {
+    extract($validated,EXTR_OVERWRITE);
 
     $error = false;
 

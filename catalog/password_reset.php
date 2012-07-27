@@ -55,23 +55,21 @@
   if ($error == true) {
     tep_redirect(tep_href_link(FILENAME_PASSWORD_FORGOTTEN));
   }
+  if (isset($HTTP_GET_VARS['action']) && ($HTTP_GET_VARS['action'] == 'process') && (false !== $validated = tep_validate_form(array('password' => 'strip_tags','confirmation' => 'strip_tags')))) {
+    extract($validated,EXTR_OVERWRITE);
 
-  if (isset($HTTP_GET_VARS['action']) && ($HTTP_GET_VARS['action'] == 'process') && isset($HTTP_POST_VARS['formid']) && ($HTTP_POST_VARS['formid'] == $sessiontoken)) {
-    $password_new = tep_db_prepare_input($HTTP_POST_VARS['password']);
-    $password_confirmation = tep_db_prepare_input($HTTP_POST_VARS['confirmation']);
-
-    if (strlen($password_new) < ENTRY_PASSWORD_MIN_LENGTH) {
+    if (strlen($password) < ENTRY_PASSWORD_MIN_LENGTH) {
       $error = true;
 
       $messageStack->add('password_reset', ENTRY_PASSWORD_NEW_ERROR);
-    } elseif ($password_new != $password_confirmation) {
+    } elseif ($password != $confirmation) {
       $error = true;
 
       $messageStack->add('password_reset', ENTRY_PASSWORD_NEW_ERROR_NOT_MATCHING);
     }
 
     if ($error == false) {
-      tep_db_query("update " . TABLE_CUSTOMERS . " set customers_password = '" . tep_encrypt_password($password_new) . "' where customers_id = '" . (int)$check_customer['customers_id'] . "'");
+      tep_db_query("update " . TABLE_CUSTOMERS . " set customers_password = '" . tep_encrypt_password($password) . "' where customers_id = '" . (int)$check_customer['customers_id'] . "'");
 
       tep_db_query("update " . TABLE_CUSTOMERS_INFO . " set customers_info_date_account_last_modified = now(), password_reset_key = null, password_reset_date = null where customers_info_id = '" . (int)$check_customer['customers_id'] . "'");
 

@@ -16,7 +16,8 @@
   require(DIR_WS_LANGUAGES . $language . '/' . FILENAME_CREATE_ACCOUNT);
 
   $process = false;
-  if (isset($HTTP_POST_VARS['action']) && ($HTTP_POST_VARS['action'] == 'process') && isset($HTTP_POST_VARS['formid']) && ($HTTP_POST_VARS['formid'] == $sessiontoken)) {
+  if (false !== $validated = tep_validate_form(array('action' => 'process','firstname' => 'strip_tags','lastname' => 'strip_tags','email_address' => 'strip_tags','street_address' => 'strip_tags','postcode' => 'strip_tags','city' => 'strip_tags','country' => 'strip_tags','telephone' => 'strip_tags','fax' => 'strip_tags','password' => 'strip_tags','confirmation' => 'strip_tags'))) {
+    extract($validated,EXTR_OVERWRITE);
     $process = true;
 
     if (ACCOUNT_GENDER == 'true') {
@@ -26,15 +27,9 @@
         $gender = false;
       }
     }
-    $firstname = tep_db_prepare_input($HTTP_POST_VARS['firstname']);
-    $lastname = tep_db_prepare_input($HTTP_POST_VARS['lastname']);
     if (ACCOUNT_DOB == 'true') $dob = tep_db_prepare_input($HTTP_POST_VARS['dob']);
-    $email_address = tep_db_prepare_input($HTTP_POST_VARS['email_address']);
     if (ACCOUNT_COMPANY == 'true') $company = tep_db_prepare_input($HTTP_POST_VARS['company']);
-    $street_address = tep_db_prepare_input($HTTP_POST_VARS['street_address']);
     if (ACCOUNT_SUBURB == 'true') $suburb = tep_db_prepare_input($HTTP_POST_VARS['suburb']);
-    $postcode = tep_db_prepare_input($HTTP_POST_VARS['postcode']);
-    $city = tep_db_prepare_input($HTTP_POST_VARS['city']);
     if (ACCOUNT_STATE == 'true') {
       $state = tep_db_prepare_input($HTTP_POST_VARS['state']);
       if (isset($HTTP_POST_VARS['zone_id'])) {
@@ -43,16 +38,11 @@
         $zone_id = false;
       }
     }
-    $country = tep_db_prepare_input($HTTP_POST_VARS['country']);
-    $telephone = tep_db_prepare_input($HTTP_POST_VARS['telephone']);
-    $fax = tep_db_prepare_input($HTTP_POST_VARS['fax']);
     if (isset($HTTP_POST_VARS['newsletter'])) {
       $newsletter = tep_db_prepare_input($HTTP_POST_VARS['newsletter']);
     } else {
       $newsletter = false;
     }
-    $password = tep_db_prepare_input($HTTP_POST_VARS['password']);
-    $confirmation = tep_db_prepare_input($HTTP_POST_VARS['confirmation']);
 
     $error = false;
 

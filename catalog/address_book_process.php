@@ -20,11 +20,12 @@
 // needs to be included earlier to set the success message in the messageStack
   require(DIR_WS_LANGUAGES . $language . '/' . FILENAME_ADDRESS_BOOK_PROCESS);
 
-  if (isset($HTTP_GET_VARS['action']) && ($HTTP_GET_VARS['action'] == 'deleteconfirm') && isset($HTTP_GET_VARS['delete']) && is_numeric($HTTP_GET_VARS['delete']) && isset($HTTP_GET_VARS['formid']) && ($HTTP_GET_VARS['formid'] == md5($sessiontoken))) {
-    if ((int)$HTTP_GET_VARS['delete'] == $customer_default_address_id) {
+  if (false !== $validated = tep_validate_form_get(array('action' => 'deleteconfirm','delete' => 'int'))) {
+    extract($validated,EXTR_OVERWRITE);
+    if ($delete == $customer_default_address_id) {
       $messageStack->add_session('addressbook', WARNING_PRIMARY_ADDRESS_DELETION, 'warning');
     } else {
-      tep_db_query("delete from " . TABLE_ADDRESS_BOOK . " where address_book_id = '" . (int)$HTTP_GET_VARS['delete'] . "' and customers_id = '" . (int)$customer_id . "'");
+      tep_db_query("delete from " . TABLE_ADDRESS_BOOK . " where address_book_id = '" . $delete . "' and customers_id = '" . (int)$customer_id . "'");
 
       $messageStack->add_session('addressbook', SUCCESS_ADDRESS_BOOK_ENTRY_DELETED, 'success');
     }
@@ -34,19 +35,14 @@
 
 // error checking when updating or adding an entry
   $process = false;
-  if (isset($HTTP_POST_VARS['action']) && (($HTTP_POST_VARS['action'] == 'process') || ($HTTP_POST_VARS['action'] == 'update')) && isset($HTTP_POST_VARS['formid']) && ($HTTP_POST_VARS['formid'] == $sessiontoken)) {
+  if (false !== $validated = tep_validate_form(array('action' => array( 'process', 'update' ),'firstname' => 'strip_tags','lastname' => 'strip_tags','street_address' => 'strip_tags','postcode' => 'strip_tags','city' => 'strip_tags','country' => 'strip_tags'))) {
+    extract($validated,EXTR_OVERWRITE);
     $process = true;
     $error = false;
 
     if (ACCOUNT_GENDER == 'true') $gender = tep_db_prepare_input($HTTP_POST_VARS['gender']);
     if (ACCOUNT_COMPANY == 'true') $company = tep_db_prepare_input($HTTP_POST_VARS['company']);
-    $firstname = tep_db_prepare_input($HTTP_POST_VARS['firstname']);
-    $lastname = tep_db_prepare_input($HTTP_POST_VARS['lastname']);
-    $street_address = tep_db_prepare_input($HTTP_POST_VARS['street_address']);
     if (ACCOUNT_SUBURB == 'true') $suburb = tep_db_prepare_input($HTTP_POST_VARS['suburb']);
-    $postcode = tep_db_prepare_input($HTTP_POST_VARS['postcode']);
-    $city = tep_db_prepare_input($HTTP_POST_VARS['city']);
-    $country = tep_db_prepare_input($HTTP_POST_VARS['country']);
     if (ACCOUNT_STATE == 'true') {
       if (isset($HTTP_POST_VARS['zone_id'])) {
         $zone_id = tep_db_prepare_input($HTTP_POST_VARS['zone_id']);

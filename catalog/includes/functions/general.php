@@ -1393,4 +1393,132 @@
       return str_replace($from, $to, $string);
     }
   }
+
+  /**
+  * Format the superglobal values extracted from form _GET or _POST
+  * 
+  * @param string $key - key passed by the $args array
+  * @param mixed $value - value passed by the $args array
+  * @param array  - passed by reference array of key => values extracted from the _GET or _POST superglobal
+  * @return mixed bool false - void
+  */
+  function tep_enforce_form_values($key, $value, &$form_data) {
+    /**
+    * Type cast if requested or use functions on the value, if not the value must match e.g. action = process
+    */
+    switch($form_data) {
+      case 'int':
+        $form_data[$key] = (int)$form_data[$key];
+        break;
+      case 'numeric':
+        if (!is_numeric($form_data[$key])) $form_data[$key] = (int)$form_data[$key];
+        break;
+      case 'real':
+      case 'double':
+      case 'float':
+        $form_data[$key] = (float)$form_data[$key];
+        break;
+      case 'string':
+        $form_data[$key] = tep_db_prepare_input((string)$form_data[$key]);
+        break;
+      case 'strip_tags':
+        $form_data[$key] = tep_db_prepare_input(strip_tags((string)$form_data[$key]));
+        break;
+      case 'array':
+        $form_data[$key] = tep_db_prepare_input((array)$form_data[$key]);
+        break;
+      case 'empty':
+      case 'null':
+        if(tep_not_null( $form_data[$key])) {
+          $form_data[$key] = is_array($form_data[$key]) ? array() : '';
+        }
+        break;
+      case 'boolean':
+      case 'bool':
+        $form_data[$key] = (bool)$form_data[$key];
+        break;
+      case 'email':
+          if (tep_validate_email($form_data[$key]) == false) return false;
+        break;
+      case 'bypass':
+        // For some unknown reason we don't want this one formatted
+        break;
+      case false !== strpos($value, 'tep_'):
+        if (function_exists($value)) {
+          $form_data[$key] = $value(tep_db_prepare_input($form_data[$key])); // Pass the value through a tep_ function e.g. tep_output_string()
+        }
+        break;
+      case false !== strpos($value, 'php_'):
+        $possible_function = substr($value, 4, strlen($value));
+        $disallowed = array( 'eval','exec','shell_exec','escapeshellarg','escapeshellcmd','system',
+                             'passthru','readfile','proc_close','proc_open','ini_alter','dl','popen',
+                             'parse_ini_file','show_source', 'curl_exec' );
+        if (in_array($possible_function,$disallowed)) return false; // Many PHP functions are dangerous
+        if (function_exists($possible_function)) {
+          $form_data[$key] = $possible_function(tep_db_prepare_input($form_data[$key]));
+        }
+        break;
+      /**
+      * When the value is an array it could be confusing unless explained
+      * 
+      * @example address_book_process.php
+      * if (isset($HTTP_POST_VARS['action']) && (($HTTP_POST_VARS['action'] == 'process') || ($HTTP_POST_VARS['action'] == 'update'))
+      * action is checked against the array e.g array( 'process', 'update' ) and if the action doesn't match any this returns false
+      */
+      case is_array($form_data[$key]):
+          if (!in_array((string)$value,$form_data[$key])) return false; // Effectively an OR
+        break;
+      default:
+        if((string)$value != (string)$form_data[$key]) return false;  // Checking simple matches like action => process
+        break; 
+    }
+    return true;
+  } // end function tep_form_validations
+
+  /**
+  * Handles _GET as opposed to _POST
+  * tep_form_validate_get( array, [,$csrf_protection = true] [,$csrf_check_only = false])
+  * @see tep_form_validate()
+  */
+  function tep_validate_form_get(array $args = array(), $csrf_protection = true, $csrf_check_only = false) {
+    return tep_validate_form($args, $csrf_protection, $csrf_check_only, 'get'); 
+  } // end function tep_form_validate_get
+  /**
+  * validates forms, validates CSRF, typecasts values and applies tep_db_prepare_input()
+  * also can apply tep_ or PHP simple one argument functions to values if required
+  * 
+  * tep_form_validate( array, [,$csrf_protection = true] [,$csrf_check_only = false] [,$type = 'post'])
+  * @param array $args - array keys to extract from _GET or _POST the values can be: -
+  * string - a simple string like "process"
+  * array - array( process, update )
+  * Type to enforce e.g. int string array etc.
+  * A call to a function to run on the superglobal value, either tep_ or php_
+  * @param bool $csrf_protection - whether checking for CSRF
+  * @param bool $csrf_check_only - return based on the CSRF check only, $csrf_protection must be true also
+  * @param string $type - post or get
+  * @return mixed - bool false or array of typecast key=>values
+  */
+  function tep_validate_form(array $args = array(), $csrf_protection = true, $csrf_check_only = false, $type = 'post') {
+    global $sessiontoken;
+    if($csrf_protection) $args['formid'] = 1; // Add form_id manually which we will use to extract from the superglobal
+    $superglobal = $type == 'post' ? $_POST : $_GET; // Which type of form are we validating
+    $expected = array_intersect_key($superglobal, $args); // Extract the expected keys from the superglobal
+    if(count($expected) !== count($args)) return false; // If we did not find all of the expected keys the form did not validate
+    if($csrf_protection) { // If CSRF form protection is set to on
+      $new_session_token = md5(tep_rand() . tep_rand() . tep_rand() . tep_rand()); // prepare new token
+      if(((string)$expected['formid'] != $sessiontoken)) { // Does the superglobal token match _SESSION?
+        $sessiontoken = $new_session_token; // Reset $sessiontoken due to failed form
+        return false; // or do other stuff like redirect and exit etc.
+      } else { // The tokens matched
+      unset($expected['formid']); // we don't want to return this as a part of the $expected array 
+      $sessiontoken = $new_session_token; // Reset $sessiontoken as the form was successful and won't be needed again
+      if($csrf_check_only) return true; // We were only asked to validate the tokens so return here
+      }
+    }
+    foreach($args as $key => $value) { // enforce form types and tep_db_prepare_input()
+      if($key == 'formid') continue;
+      if (false === tep_enforce_form_values($key, $value, $expected)) return false;
+    } // end foreach
+    return (array)$expected; // array of validated and type cast superglobal key=>values                  
+  } // end function tep_form_validate
 ?>
