@@ -1,0 +1,34 @@
+branch form_handler_class
+
+Operates almost exactly like the functional code except for an important addition.
+
+Usage:
+
+  require(DIR_WS_CLASSES . '/form_handler.php');
+  $formHandler = new form_handler();
+  
+  if (($extracted = $formHandler->setRequiredFormKeys(array())
+                                ->setOptionalFormKeys(array()
+                                ->validate()) !== false) {
+    extract($extracted,EXTR_OVERWRITE);
+    
+###########################################################
+    
+In complex files like address_book_process there are _POST variables that are always present
+but also there are variables that are only introduced in certain conditions e.g. 
+
+if (ACCOUNT_GENDER == 'true')
+
+This system handles that by: -
+
+setRequiredFormKeys() - is passed an array of "required to be present" _POST keys.
+
+setOptionalFormKeys() - is passed a full array of optional _POST keys
+
+The required keys are used along with the sessiontoken when validating the form.
+
+The optional keys are extracted from _POST if they happen to be present and their values are typecast
+along with the required key=>value(s)
+
+This allows a lot of flexibility, reduction of core code, reduction of code complexity and the definate
+knowledge that all variables extracted have been typecast and sanitised.
