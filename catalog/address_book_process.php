@@ -34,27 +34,14 @@
 
 // error checking when updating or adding an entry
   $process = false;
-  if (isset($HTTP_POST_VARS['action']) && (($HTTP_POST_VARS['action'] == 'process') || ($HTTP_POST_VARS['action'] == 'update')) && isset($HTTP_POST_VARS['formid']) && ($HTTP_POST_VARS['formid'] == $sessiontoken)) {
+  require(DIR_WS_CLASSES . '/form_handler.php');
+  $formHandler = new form_handler();
+  if (($extracted = $formHandler->setRequiredFormKeys(array('action' => array('process', 'update'), 'firstname' => 'strip_tags', 'lastname' => 'strip_tags', 'street_address' => 'strip_tags', 'postcode' => 'strip_tags','city' => 'strip_tags','country' => 'numeric', 'state' => 'strip_tags'))
+                                ->setOptionalFormKeys(array('gender' => 'strip_tags', 'company' => 'strip_tags', 'suburb' => 'strip_tags', 'zone_id' => 'strip_tags', 'primary' => 'strip_tags' ))
+                                ->validate()) !== false) {
+    extract($extracted,EXTR_OVERWRITE);
     $process = true;
     $error = false;
-
-    if (ACCOUNT_GENDER == 'true') $gender = tep_db_prepare_input($HTTP_POST_VARS['gender']);
-    if (ACCOUNT_COMPANY == 'true') $company = tep_db_prepare_input($HTTP_POST_VARS['company']);
-    $firstname = tep_db_prepare_input($HTTP_POST_VARS['firstname']);
-    $lastname = tep_db_prepare_input($HTTP_POST_VARS['lastname']);
-    $street_address = tep_db_prepare_input($HTTP_POST_VARS['street_address']);
-    if (ACCOUNT_SUBURB == 'true') $suburb = tep_db_prepare_input($HTTP_POST_VARS['suburb']);
-    $postcode = tep_db_prepare_input($HTTP_POST_VARS['postcode']);
-    $city = tep_db_prepare_input($HTTP_POST_VARS['city']);
-    $country = tep_db_prepare_input($HTTP_POST_VARS['country']);
-    if (ACCOUNT_STATE == 'true') {
-      if (isset($HTTP_POST_VARS['zone_id'])) {
-        $zone_id = tep_db_prepare_input($HTTP_POST_VARS['zone_id']);
-      } else {
-        $zone_id = false;
-      }
-      $state = tep_db_prepare_input($HTTP_POST_VARS['state']);
-    }
 
     if (ACCOUNT_GENDER == 'true') {
       if ( ($gender != 'm') && ($gender != 'f') ) {
@@ -145,13 +132,13 @@
         }
       }
 
-      if ($HTTP_POST_VARS['action'] == 'update') {
+      if ($action == 'update') {
         $check_query = tep_db_query("select address_book_id from " . TABLE_ADDRESS_BOOK . " where address_book_id = '" . (int)$HTTP_GET_VARS['edit'] . "' and customers_id = '" . (int)$customer_id . "' limit 1");
         if (tep_db_num_rows($check_query) == 1) {
           tep_db_perform(TABLE_ADDRESS_BOOK, $sql_data_array, 'update', "address_book_id = '" . (int)$HTTP_GET_VARS['edit'] . "' and customers_id ='" . (int)$customer_id . "'");
 
 // reregister session variables
-          if ( (isset($HTTP_POST_VARS['primary']) && ($HTTP_POST_VARS['primary'] == 'on')) || ($HTTP_GET_VARS['edit'] == $customer_default_address_id) ) {
+          if ( (isset($primary) && ($primary == 'on')) || ($HTTP_GET_VARS['edit'] == $customer_default_address_id) ) {
             $customer_first_name = $firstname;
             $customer_country_id = $country;
             $customer_zone_id = (($zone_id > 0) ? (int)$zone_id : '0');
@@ -176,17 +163,17 @@
           $new_address_book_id = tep_db_insert_id();
 
 // reregister session variables
-          if (isset($HTTP_POST_VARS['primary']) && ($HTTP_POST_VARS['primary'] == 'on')) {
+          if (isset($primary) && ($primary == 'on')) {
             $customer_first_name = $firstname;
             $customer_country_id = $country;
             $customer_zone_id = (($zone_id > 0) ? (int)$zone_id : '0');
-            if (isset($HTTP_POST_VARS['primary']) && ($HTTP_POST_VARS['primary'] == 'on')) $customer_default_address_id = $new_address_book_id;
+            if (isset($primary) && ($primary == 'on')) $customer_default_address_id = $new_address_book_id;
 
             $sql_data_array = array('customers_firstname' => $firstname,
                                     'customers_lastname' => $lastname);
 
             if (ACCOUNT_GENDER == 'true') $sql_data_array['customers_gender'] = $gender;
-            if (isset($HTTP_POST_VARS['primary']) && ($HTTP_POST_VARS['primary'] == 'on')) $sql_data_array['customers_default_address_id'] = $new_address_book_id;
+            if (isset($primary) && ($primary == 'on')) $sql_data_array['customers_default_address_id'] = $new_address_book_id;
 
             tep_db_perform(TABLE_CUSTOMERS, $sql_data_array, 'update', "customers_id = '" . (int)$customer_id . "'");
 

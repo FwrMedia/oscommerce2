@@ -13,15 +13,14 @@
   require('includes/application_top.php');
 
   require(DIR_WS_LANGUAGES . $language . '/' . FILENAME_CONTACT_US);
-
-  if (isset($HTTP_GET_VARS['action']) && ($HTTP_GET_VARS['action'] == 'send') && isset($HTTP_POST_VARS['formid']) && ($HTTP_POST_VARS['formid'] == $sessiontoken)) {
+  require(DIR_WS_CLASSES . '/form_handler.php');
+  $formHandler = new form_handler();
+  if (($extracted = $formHandler->setRequiredFormKeys(array( 'action' => 'send', 'name' => 'strip_tags', 'email' => 'strip_tags', 'enquiry' => 'strip_tags'))
+                                ->setOptionalFormKeys()->validate()) !== false) {
+    extract($extracted,EXTR_OVERWRITE);
     $error = false;
 
-    $name = tep_db_prepare_input($HTTP_POST_VARS['name']);
-    $email_address = tep_db_prepare_input($HTTP_POST_VARS['email']);
-    $enquiry = tep_db_prepare_input($HTTP_POST_VARS['enquiry']);
-
-    if (!tep_validate_email($email_address)) {
+    if (!tep_validate_email($email)) {
       $error = true;
 
       $messageStack->add('contact', ENTRY_EMAIL_ADDRESS_CHECK_ERROR);
@@ -74,7 +73,7 @@
   } else {
 ?>
 
-<?php echo tep_draw_form('contact_us', tep_href_link(FILENAME_CONTACT_US, 'action=send'), 'post', '', true); ?>
+<?php echo tep_draw_form('contact_us', tep_href_link(FILENAME_CONTACT_US), 'post', '', true); ?>
 
 <div class="contentContainer">
   <div class="contentText">
@@ -95,7 +94,7 @@
   </div>
 
   <div class="buttonSet">
-    <span class="buttonAction"><?php echo tep_draw_button(IMAGE_BUTTON_CONTINUE, 'triangle-1-e', null, 'primary'); ?></span>
+    <span class="buttonAction"><?php echo tep_draw_hidden_field( 'action', 'send') . tep_draw_button(IMAGE_BUTTON_CONTINUE, 'triangle-1-e', null, 'primary'); ?></span>
   </div>
 </div>
 
