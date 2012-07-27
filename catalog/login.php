@@ -20,7 +20,7 @@
   require(DIR_WS_LANGUAGES . $language . '/' . FILENAME_LOGIN);
 
   $error = false;
-  if (false !== $validated = tep_validate_form(array('action' => 'process', 'email_address' => 'strip_tags','password' => 'strip_tags'))) {
+  if (isset($HTTP_GET_VARS['action']) && ($HTTP_GET_VARS['action'] == 'process') && (false !== $validated = tep_validate_form(array('email_address' => 'strip_tags','password' => 'strip_tags')))) {
     extract($validated,EXTR_OVERWRITE);
 
 // Check if email exists
@@ -109,7 +109,7 @@
   <div class="contentText">
     <p><?php echo TEXT_RETURNING_CUSTOMER; ?></p>
 
-    <?php echo tep_draw_form('login', tep_href_link(FILENAME_LOGIN, '', 'SSL'), 'post', '', true); ?>
+    <?php echo tep_draw_form('login', tep_href_link(FILENAME_LOGIN, 'action=process', 'SSL'), 'post', '', true); ?>
 
     <table border="0" cellspacing="0" cellpadding="2" width="100%">
       <tr>
@@ -118,7 +118,7 @@
       </tr>
       <tr>
         <td class="fieldKey"><?php echo ENTRY_PASSWORD; ?></td>
-        <td class="fieldValue"><?php echo tep_draw_password_field('password') . tep_draw_hidden_field('action', 'process'); ?></td>
+        <td class="fieldValue"><?php echo tep_draw_password_field('password'); ?></td>
       </tr>
     </table>
 

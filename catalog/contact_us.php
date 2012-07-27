@@ -14,7 +14,7 @@
 
   require(DIR_WS_LANGUAGES . $language . '/' . FILENAME_CONTACT_US);
 
-  if (false !== $validated = tep_validate_form(array('action' => 'send', 'name' => 'strip_tags','email' => 'strip_tags','enquiry' => 'strip_tags'))) {
+  if (isset($HTTP_GET_VARS['action']) && ($HTTP_GET_VARS['action'] == 'send') && (false !== $validated = tep_validate_form(array('name' => 'strip_tags','email' => 'strip_tags','enquiry' => 'strip_tags')))) {
     extract($validated,EXTR_OVERWRITE);
     $error = false;
 
@@ -71,7 +71,7 @@
   } else {
 ?>
 
-<?php echo tep_draw_form('contact_us', tep_href_link(FILENAME_CONTACT_US), 'post', '', true); ?>
+<?php echo tep_draw_form('contact_us', tep_href_link(FILENAME_CONTACT_US, 'action=send'), 'post', '', true); ?>
 
 <div class="contentContainer">
   <div class="contentText">
@@ -86,7 +86,7 @@
       </tr>
       <tr>
         <td class="fieldKey" valign="top"><?php echo ENTRY_ENQUIRY; ?></td>
-        <td class="fieldValue"><?php echo tep_draw_textarea_field('enquiry', 'soft', 50, 15) . tep_draw_hidden_field('action', 'send'); ?></td>
+        <td class="fieldValue"><?php echo tep_draw_textarea_field('enquiry', 'soft', 50, 15); ?></td>
       </tr>
     </table>
   </div>

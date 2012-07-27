@@ -19,6 +19,7 @@
 
 // needs to be included earlier to set the success message in the messageStack
   require(DIR_WS_LANGUAGES . $language . '/' . FILENAME_ACCOUNT_PASSWORD);
+
   if (false !== $validated = tep_validate_form(array('action' => 'process','password_current' => 'string','password_new' => 'string','password_confirmation' => 'string'))) {
     extract($validated,EXTR_OVERWRITE);
 

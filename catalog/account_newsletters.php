@@ -22,6 +22,7 @@
 
   $newsletter_query = tep_db_query("select customers_newsletter from " . TABLE_CUSTOMERS . " where customers_id = '" . (int)$customer_id . "'");
   $newsletter = tep_db_fetch_array($newsletter_query);
+
   if (false !== tep_validate_form(array('action' => 'process'))) {
     if (isset($HTTP_POST_VARS['newsletter_general']) && is_numeric($HTTP_POST_VARS['newsletter_general'])) {
       $newsletter_general = tep_db_prepare_input($HTTP_POST_VARS['newsletter_general']);
