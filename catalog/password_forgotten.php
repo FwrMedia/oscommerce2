@@ -16,7 +16,7 @@
 
   $password_reset_initiated = false;
 
-  if (isset($HTTP_GET_VARS['action']) && ($HTTP_GET_VARS['action'] == 'process') && (false !== $validated = tep_validate_form(array('email_address' => 'strip_tags')))) {
+  if (false !== $validated = tep_validate_form(array('action' => 'process', 'email_address' => 'strip_tags'))) {
     extract($validated,EXTR_OVERWRITE);
 
     $check_customer_query = tep_db_query("select customers_firstname, customers_lastname, customers_id from " . TABLE_CUSTOMERS . " where customers_email_address = '" . tep_db_input($email_address) . "'");
@@ -77,7 +77,7 @@
   } else {
 ?>
 
-<?php echo tep_draw_form('password_forgotten', tep_href_link(FILENAME_PASSWORD_FORGOTTEN, 'action=process', 'SSL'), 'post', '', true); ?>
+<?php echo tep_draw_form('password_forgotten', tep_href_link(FILENAME_PASSWORD_FORGOTTEN, '', 'SSL'), 'post', '', true); ?>
 
 <div class="contentContainer">
   <div class="contentText">
@@ -94,7 +94,7 @@
   <div class="buttonSet">
     <span class="buttonAction"><?php echo tep_draw_button(IMAGE_BUTTON_CONTINUE, 'triangle-1-e', null, 'primary'); ?></span>
 
-    <?php echo tep_draw_button(IMAGE_BUTTON_BACK, 'triangle-1-w', tep_href_link(FILENAME_LOGIN, '', 'SSL')); ?>
+    <?php echo tep_draw_hidden_field('action', 'process') . tep_draw_button(IMAGE_BUTTON_BACK, 'triangle-1-w', tep_href_link(FILENAME_LOGIN, '', 'SSL')); ?>
   </div>
 </div>
 

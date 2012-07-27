@@ -20,7 +20,7 @@
   require(DIR_WS_LANGUAGES . $language . '/' . FILENAME_LOGIN);
 
   $error = false;
-  if (isset($HTTP_GET_VARS['action']) && ($HTTP_GET_VARS['action'] == 'process') && (false !== $validated = tep_validate_form(array('email_address' => 'strip_tags','password' => 'strip_tags')))) {
+  if (false !== $validated = tep_validate_form(array('action' => 'process', 'email_address' => 'strip_tags','password' => 'strip_tags'))) {
     extract($validated,EXTR_OVERWRITE);
 
 // Check if email exists
@@ -109,7 +109,7 @@
   <div class="contentText">
     <p><?php echo TEXT_RETURNING_CUSTOMER; ?></p>
 
-    <?php echo tep_draw_form('login', tep_href_link(FILENAME_LOGIN, 'action=process', 'SSL'), 'post', '', true); ?>
+    <?php echo tep_draw_form('login', tep_href_link(FILENAME_LOGIN, '', 'SSL'), 'post', '', true); ?>
 
     <table border="0" cellspacing="0" cellpadding="2" width="100%">
       <tr>
@@ -124,7 +124,7 @@
 
     <p><?php echo '<a href="' . tep_href_link(FILENAME_PASSWORD_FORGOTTEN, '', 'SSL') . '">' . TEXT_PASSWORD_FORGOTTEN . '</a>'; ?></p>
 
-    <p align="right"><?php echo tep_draw_button(IMAGE_BUTTON_LOGIN, 'key', null, 'primary'); ?></p>
+    <p align="right"><?php echo tep_draw_hidden_field('action', 'process') . tep_draw_button(IMAGE_BUTTON_LOGIN, 'key', null, 'primary'); ?></p>
 
     </form>
   </div>
