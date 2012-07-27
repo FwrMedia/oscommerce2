@@ -55,7 +55,7 @@
   if ($error == true) {
     tep_redirect(tep_href_link(FILENAME_PASSWORD_FORGOTTEN));
   }
-  if (isset($HTTP_GET_VARS['action']) && ($HTTP_GET_VARS['action'] == 'process') && (false !== $validated = tep_validate_form(array('password' => 'strip_tags','confirmation' => 'strip_tags')))) {
+  if (false !== $validated = tep_validate_form(array('action' => 'process', 'password' => 'strip_tags','confirmation' => 'strip_tags'))) {
     extract($validated,EXTR_OVERWRITE);
 
     if (strlen($password) < ENTRY_PASSWORD_MIN_LENGTH) {
@@ -94,7 +94,7 @@
   }
 ?>
 
-<?php echo tep_draw_form('password_reset', tep_href_link(FILENAME_PASSWORD_RESET, 'account=' . $email_address . '&key=' . $password_key . '&action=process', 'SSL'), 'post', 'onsubmit="return check_form(password_reset);"', true); ?>
+<?php echo tep_draw_form('password_reset', tep_href_link(FILENAME_PASSWORD_RESET, 'account=' . $email_address . '&key=' . $password_key, 'SSL'), 'post', 'onsubmit="return check_form(password_reset);"', true); ?>
 
 <div class="contentContainer">
   <div class="contentText">
@@ -113,7 +113,7 @@
   </div>
 
   <div class="buttonSet">
-    <span class="buttonAction"><?php echo tep_draw_button(IMAGE_BUTTON_CONTINUE, 'triangle-1-e', null, 'primary'); ?></span>
+    <span class="buttonAction"><?php echo tep_draw_hidden_field('action', 'process') . tep_draw_button(IMAGE_BUTTON_CONTINUE, 'triangle-1-e', null, 'primary'); ?></span>
   </div>
 </div>
 

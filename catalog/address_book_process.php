@@ -19,7 +19,6 @@
 
 // needs to be included earlier to set the success message in the messageStack
   require(DIR_WS_LANGUAGES . $language . '/' . FILENAME_ADDRESS_BOOK_PROCESS);
-
   if (false !== $validated = tep_validate_form_get(array('action' => 'deleteconfirm','delete' => 'int'))) {
     extract($validated,EXTR_OVERWRITE);
     if ($delete == $customer_default_address_id) {

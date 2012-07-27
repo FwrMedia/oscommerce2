@@ -28,8 +28,7 @@
 
   $customer_query = tep_db_query("select customers_firstname, customers_lastname from " . TABLE_CUSTOMERS . " where customers_id = '" . (int)$customer_id . "'");
   $customer = tep_db_fetch_array($customer_query);
-
-  if (isset($HTTP_GET_VARS['action']) && ($HTTP_GET_VARS['action'] == 'process') && (false !== $validated = tep_validate_form(array('rating' => 'int','review' => 'strip_tags')))) {
+  if (false !== $validated = tep_validate_form(array('action' => 'process', 'rating' => 'int','review' => 'strip_tags'))) {
     extract($validated,EXTR_OVERWRITE);
 
     $error = false;
@@ -111,7 +110,7 @@ function checkForm() {
   }
 ?>
 
-<?php echo tep_draw_form('product_reviews_write', tep_href_link(FILENAME_PRODUCT_REVIEWS_WRITE, 'action=process&products_id=' . $HTTP_GET_VARS['products_id']), 'post', 'onsubmit="return checkForm();"', true); ?>
+<?php echo tep_draw_form('product_reviews_write', tep_href_link(FILENAME_PRODUCT_REVIEWS_WRITE, 'products_id=' . $HTTP_GET_VARS['products_id']), 'post', 'onsubmit="return checkForm();"', true); ?>
 
 <div class="contentContainer">
 
@@ -149,7 +148,7 @@ function checkForm() {
   <div class="buttonSet">
     <span class="buttonAction"><?php echo tep_draw_button(IMAGE_BUTTON_CONTINUE, 'triangle-1-e', null, 'primary'); ?></span>
 
-    <?php echo tep_draw_button(IMAGE_BUTTON_BACK, 'triangle-1-w', tep_href_link(FILENAME_PRODUCT_REVIEWS, tep_get_all_get_params(array('reviews_id', 'action')))); ?>
+    <?php echo tep_draw_hidden_field('action', 'process') . tep_draw_button(IMAGE_BUTTON_BACK, 'triangle-1-w', tep_href_link(FILENAME_PRODUCT_REVIEWS, tep_get_all_get_params(array('reviews_id', 'action')))); ?>
   </div>
 </div>
 
