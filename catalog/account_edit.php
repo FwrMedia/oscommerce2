@@ -19,15 +19,10 @@
 
 // needs to be included earlier to set the success message in the messageStack
   require(DIR_WS_LANGUAGES . $language . '/' . FILENAME_ACCOUNT_EDIT);
-
-  if (isset($HTTP_POST_VARS['action']) && ($HTTP_POST_VARS['action'] == 'process') && isset($HTTP_POST_VARS['formid']) && ($HTTP_POST_VARS['formid'] == $sessiontoken)) {
+  if (false !== $validated = tep_validate_form(array('action' => 'process','firstname' => 'strip_tags','lastname' => 'strip_tags','email_address' => 'strip_tags','telephone' => 'strip_tags','fax' => 'strip_tags'))) {
+    extract($validated,EXTR_OVERWRITE);
     if (ACCOUNT_GENDER == 'true') $gender = tep_db_prepare_input($HTTP_POST_VARS['gender']);
-    $firstname = tep_db_prepare_input($HTTP_POST_VARS['firstname']);
-    $lastname = tep_db_prepare_input($HTTP_POST_VARS['lastname']);
     if (ACCOUNT_DOB == 'true') $dob = tep_db_prepare_input($HTTP_POST_VARS['dob']);
-    $email_address = tep_db_prepare_input($HTTP_POST_VARS['email_address']);
-    $telephone = tep_db_prepare_input($HTTP_POST_VARS['telephone']);
-    $fax = tep_db_prepare_input($HTTP_POST_VARS['fax']);
 
     $error = false;
 
