@@ -1406,7 +1406,7 @@
     /**
     * Type cast if requested or use functions on the value, if not the value must match e.g. action = process
     */
-    switch($form_data) {
+    switch($value) {
       case 'int':
         $form_data[$key] = (int)$form_data[$key];
         break;
