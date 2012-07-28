@@ -1,19 +1,78 @@
-branch form_handler_class
+Branch form_handler_class
 
-Operates almost exactly like the functional code except for an important addition.
+Features/benefits:
+- Validates forms and CSRF
+- Forces sanitisation or type setting of form values
+- Reduces on page code
+- Reduces on page code complexity
+- Forces contribution developers to sanitise all values
+- Protects the script from contribution developers who "forget" to sanitise form input.
 
-Usage:
+Changelog: 28th July 2012
+Added shortform usage, added reset(), added setDefaultSanitiser( string ), 
+
+Standard Usage:
+  Validates CSRF, applies type casting and sanitisation to values, ensures required form keys are in place, extracts any optionals.
 
   require(DIR_WS_CLASSES . '/form_handler.php');
   $formHandler = new form_handler();
   
-  if (($extracted = $formHandler->setRequiredFormKeys(array())
-                                ->setOptionalFormKeys(array()
+  if (($extracted = $formHandler->setRequiredFormKeys(array( 'action' => 'process', 'some_int' => 'int', 'some_string' => 'string', 'some_user_input_text' => 'strip_tags'))
+                                ->setOptionalFormKeys(array( 'optional_int' => 'int', 'optional_user_input_text' => 'strip_tags' ))
                                 ->validate()) !== false) {
     extract($extracted,EXTR_OVERWRITE);
     
 ###########################################################
+
+Short form usage:
+  The same as above but as the arrays passed in are numerically indexed the system applies the strip_tags sanitisation by default.
+  Short and long form can be mixed.
+  
+  if (($extracted = $formHandler->setRequiredFormKeys(array( 'action' => 'process','some_int','some_string','some_user_input_text'))
+                                ->setOptionalFormKeys(array( 'optional_int','optional_user_input_text' ))
+                                ->validate()) !== false) {
+    extract($extracted,EXTR_OVERWRITE);
     
+###########################################################
+
+Just validating CSRF:
+
+  if (($formHandler->limitCsrfCheckOnly(true)->validate()) !== false) {}
+  
+###########################################################
+
+Chaining form validation:
+
+  if (($extracted = $formHandler->setRequiredFormKeys(array( 'action' => 'process', 'some_int' => 'int', 'some_string' => 'string', 'some_user_input_text' => 'strip_tags'))
+                                ->setOptionalFormKeys(array( 'optional_int' => 'int', 'optional_user_input_text' => 'strip_tags' ))
+                                ->validate()) !== false) {
+    extract($extracted,EXTR_OVERWRITE);
+    // Do stuff here
+  } elseif (($extracted = $formHandler->reset()
+                                      ->setRequiredFormKeys(array( 'action' => 'update', 'some_int' => 'int', 'some_string' => 'string', 'some_user_input_text' => 'strip_tags'))
+                                      ->setOptionalFormKeys(array( 'optional_int' => 'int', 'optional_user_input_text' => 'strip_tags' ))
+                                      ->validate()) !== false) {
+    extract($extracted,EXTR_OVERWRITE);
+    // Do other stuff here  
+  }
+  
+###########################################################
+
+  Public methods - all of these chain:
+  
+  reset()
+  setRequiredFormKeys()
+  setOptionalFormKeys()
+  setDefaultSanitiser()
+  requireCsrfCheck()
+  limitCsrfCheckOnly()
+  validate()
+  
+###########################################################  
+
+
+Explanation of setXxxxxFormKeys()
+
 In complex files like address_book_process there are _POST variables that are always present
 but also there are variables that are only introduced in certain conditions e.g. 
 

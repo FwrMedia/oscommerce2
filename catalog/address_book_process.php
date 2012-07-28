@@ -36,8 +36,8 @@
   $process = false;
   require(DIR_WS_CLASSES . '/form_handler.php');
   $formHandler = new form_handler();
-  if (($extracted = $formHandler->setRequiredFormKeys(array('action' => array('process', 'update'), 'firstname' => 'strip_tags', 'lastname' => 'strip_tags', 'street_address' => 'strip_tags', 'postcode' => 'strip_tags','city' => 'strip_tags','country' => 'numeric', 'state' => 'strip_tags'))
-                                ->setOptionalFormKeys(array('gender' => 'strip_tags', 'company' => 'strip_tags', 'suburb' => 'strip_tags', 'zone_id' => 'strip_tags', 'primary' => 'strip_tags' ))
+  if (($extracted = $formHandler->setRequiredFormKeys(array('action' => array('process', 'update'), 'firstname', 'lastname', 'street_address', 'postcode','city','country', 'state'))
+                                ->setOptionalFormKeys(array('gender', 'company', 'suburb', 'zone_id', 'primary' ))
                                 ->validate()) !== false) {
     extract($extracted,EXTR_OVERWRITE);
     $process = true;
