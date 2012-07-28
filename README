@@ -9,7 +9,7 @@ Features/benefits:
 - Protects the script from contribution developers who "forget" to sanitise form input.
 
 Changelog: 28th July 2012
-Added shortform usage, added reset(), added setDefaultSanitiser( string ), 
+Added shortform usage, added reset(), added setDefaultSanitiser( string ), added file uploads check 
 
 Standard Usage:
   Validates CSRF, applies type casting and sanitisation to values, ensures required form keys are in place, extracts any optionals.
@@ -91,3 +91,22 @@ along with the required key=>value(s)
 
 This allows a lot of flexibility, reduction of core code, reduction of code complexity and the definate
 knowledge that all variables extracted have been typecast and sanitised.
+
+File uploads example: -
+
+  if (($extracted = $formHandler->addAcceptableUploadMimeTypes(array('image/jpeg', 'image/png', 'image/gif'))
+                                ->setRequiredFormKeys(array( 'action' => 'some_action', 'my_image' => 'uploaded_file'))
+                                ->validate()) !== false) {}
+
+The switch code:
+
+  case 'file':
+  case 'uploaded_file':
+    if ( PHP_VERSION < '4.1.0' ) break;
+    if (!array_key_exists($key, $_FILES)) return false;
+    if ((PHP_VERSION >= '4.2.0') && ($_FILES[$key]['error'] !== 0)) return false;
+    if (!array_key_exists('tmp_name', $_FILES[$key]) || !is_uploaded_file($_FILES[$key]['tmp_name'])) return false;
+    if (!empty($this->_acceptable_upload_mime_types)) {
+      if( !array_key_exists( 'type', $_FILES[$key]) || !in_array($_FILES[$key]['type'], $this->_acceptable_upload_mime_types)) return false;
+    }
+    break;

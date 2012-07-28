@@ -59,6 +59,13 @@
     */
     var $_default_sanitiser = 'strip_tags';
     /**
+    * array of acceptable mime types used by file upload checking
+    * 
+    * @var array - mime types e.g. array( 'image/jpeg', '   image/png', '   image/gif');
+    * @access protected - internal method would be protected in PHP5
+    */
+    var $_acceptable_upload_mime_types = array();
+    /**
     * Constructor
     * 
     * @param string $superglobal_type
@@ -128,6 +135,15 @@
     function limitCsrfCheckOnly($csrf_only = false) {
       $this->_do_csrf_check_only = (bool)$csrf_only;
       return $this;  
+    }
+    /**
+    * Add an array of acceptable mime types to be used checking upload validity
+    * 
+    * @param array $args - e.g. array( 'image/jpeg', 'image/png', 'image/gif' )
+    */
+    function addAcceptableUploadMimeTypes( array $args = array() ) {
+      $this->_acceptable_upload_mime_types = $args;
+      return $this;
     }
     /**
     * Reset used in instances where form validation is chained
@@ -237,6 +253,16 @@
         switch($value) {
           case 'strip_tags':
             $this->_extracted[$key] = tep_db_prepare_input(strip_tags((string)$this->_extracted[$key]));
+            break;
+          case 'file':
+          case 'uploaded_file':
+            if ( PHP_VERSION < '4.1.0' ) break;
+            if (!array_key_exists($key, $_FILES)) return false;
+            if ((PHP_VERSION >= '4.2.0') && ($_FILES[$key]['error'] !== 0)) return false;
+            if (!array_key_exists('tmp_name', $_FILES[$key]) || !is_uploaded_file($_FILES[$key]['tmp_name'])) return false;
+            if (!empty($this->_acceptable_upload_mime_types)) {
+              if( !array_key_exists( 'type', $_FILES[$key]) || !in_array($_FILES[$key]['type'], $this->_acceptable_upload_mime_types)) return false;
+            }
             break;
           case 'int':
             $this->_extracted[$key] = (int)$this->_extracted[$key];
